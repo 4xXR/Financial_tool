@@ -102,7 +102,11 @@ def get_complete_financials(ticker):
 tickers = ["GOOGL", "AAPL", "MSFT"]  # Example tickers
 
 # Retieves ratios for each company
-financial_data = [get_complete_financials(ticker) for ticker in tickers if get_complete_financials(ticker) is not None]
+financial_data = []
+for ticker in tickers:
+    data = get_complete_financials(ticker) # Call function only one due to API is rate-limited
+    if data is not None:
+        financial_data.append(data)
 
 # Create a DataFrame for better visualization
 df_financial_ratios = pd.DataFrame(financial_data)
