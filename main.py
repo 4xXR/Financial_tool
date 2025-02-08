@@ -96,9 +96,14 @@ def export_to_csv(data, filename="financial_data.csv"):
     df.to_csv(filename, index=False)
     print(f"Data succesfully saved to {filename}")
 
+# User input system for ticker selection
+def get_user_tickers():
+    """Prompts the user to input stock tickers dynamically"""
+    tickers = input("Enter stock tickers separated by commas (e.g., GOOGL, AAPL, MSFT): ")
+    return [ticker.upper().strip() for ticker in tickers.split(",")]
 
-# List of companies to analyze
-tickers = ["GOOGL", "AAPL", "MSFT"]  # Example tickers
+# Get user-selected tickers
+tickers = get_user_tickers()
 
 # Retieves ratios for each company
 financial_data = []
@@ -107,8 +112,7 @@ for ticker in tickers:
     if data is not None:
         financial_data.append(data)
 
-# Create a DataFrame for better visualization
-df_financial_ratios = pd.DataFrame(financial_data)
+# Export 
 
 # Display results
 print(df_financial_ratios)
