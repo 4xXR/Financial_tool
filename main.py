@@ -77,13 +77,7 @@ def get_fmp_ratios(ticker):
 
 def get_complete_financials(ticker):
     """
-    Combines financial data from Yahoo Finance and FMP API.
-
-    Parameters:
-    ticker (str): The stock symbol (e.g., "GOOGL").
-
-    Returns:
-    dict: Combined dictionary of financial ratios.
+    Combines financial data from Yahoo Finance and FMP API
     """
     yahoo_data = get_financial_ratios_yahoo(ticker)
     fmp_data = get_fmp_ratios(ticker)
@@ -96,7 +90,12 @@ def get_complete_financials(ticker):
     complete_data = {**yahoo_data, **fmp_data}
     return complete_data
 
-    
+def export_to_csv(data, filename="financial_data.csv"):
+    """Exports financial data to a CSV file."""
+    df = pd.DataFrame(data)
+    df.to_csv(filename, index=False)
+    print(f"Data succesfully saved to {filename}")
+
 
 # List of companies to analyze
 tickers = ["GOOGL", "AAPL", "MSFT"]  # Example tickers
