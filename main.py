@@ -112,7 +112,8 @@ for ticker in tickers:
     if data is not None:
         financial_data.append(data)
 
-# Export 
-
-# Display results
-print(df_financial_ratios)
+# Export results to CSV
+if financial_data:
+    export_to_csv(financial_data)
+else:
+    print("Not valid financial data available")
