@@ -88,12 +88,13 @@ def get_complete_financials(ticker):
     yahoo_data = get_financial_ratios_yahoo(ticker)
     fmp_data = get_fmp_ratios(ticker)
 
-    if not yahoo_data or fmp_data:
+    if not yahoo_data or not fmp_data:
         print(f"Skipping {ticker} due to missing data")
         return None
     
     # Merge Yahoo and FMP data
     complete_data = {**yahoo_data, **fmp_data}
+    return complete_data
 
     
 
