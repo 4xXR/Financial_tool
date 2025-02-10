@@ -1,6 +1,8 @@
 import os
 import requests
 
+from fetch_yahoo import get_financial_ratios_yahoo
+
 API_KEY = os.getenv("FMP_API_KEY")
 
 if not API_KEY:
@@ -22,28 +24,28 @@ def get_fmp_ratios(ticker):
     ratios_data = response_ratios.json()
     price_data = response_price.json()
     
-    data = {
-        "ratios": ratios_data,
-        "price": price_data
-    }
-
-    if not data:
+    if not ratios_data or price_data:
         print(f"No data available for {ticker}")
         return None
     
     # Extract the most recent financial ratios
-    latest_ratios = data["ratios"][0]
+    latest_ratios = ratios_data[0]
 
     # Extract financial ratios from 5 years ago
-    five_years_ago_ratios = data ["ratios"][4]
+    five_years_ago_ratios = ratios_data[4]
 
     # Extract the most recent price
-    latest_price = data["price"][0]
+    latest_price = price_data[0]
 
     # Price relative to historical valuation values
-    price_to_historical_per = latest_price.get("lastSalePrice") * five_years_ago_ratios.get("priceEarningsRatio")
-    price_to_historical_ps = latest_price.get("lastSalePrice") * five_years_ago_ratios.get("priceSalesRatio")
-    price_to_historical_pbv = latest_price.get("lastSalePrice") * five_years_ago_ratios.get("priceToBookRatio")
+    yahoo_data = get_financial_ratios_yahoo(ticker)
+    current_per = yahoo_data.get("PER (P/E Ratio)")
+    current_ps = yahoo_data.get("PS (Price to Sales)")
+    current_pbv = yahoo_data.get("PBV (Price to Book)")
+
+    price_to_historical_per = (latest_price.get("lastSalePrice") * five_years_ago_ratios.get("priceEarningsRatio")) / current_per
+    price_to_historical_ps = (latest_price.get("lastSalePrice") * five_years_ago_ratios.get("priceSalesRatio")) / current_ps
+    price_to_historical_pbv = (latest_price.get("lastSalePrice") * five_years_ago_ratios.get("priceToBookRatio")) / current_pbv
 
     fmp_ratios = {
         "Company": ticker,
