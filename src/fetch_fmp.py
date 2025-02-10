@@ -40,6 +40,7 @@ def get_fmp_ratios(ticker):
         "5Y ago PER (P/E Ratio)": five_years_ago_ratios.get("priceEarningsRatio"),
         "5Y ago PS (Price to Sales)": five_years_ago_ratios.get("priceSalesRatio"),
         "5Y ago PBV (Price to Book)": five_years_ago_ratios.get("priceToBookRatio"),
+        "PRICE" : latest_ratios.get("lastSalePrice"),
         #"5Y ago priceFairValue": five_years_ago_ratios.get("priceFairValue"),
     }
 
