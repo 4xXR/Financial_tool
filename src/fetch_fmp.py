@@ -25,6 +25,9 @@ def get_fmp_ratios(ticker):
     # Extract the most recent financial ratios
     latest_ratios = data[0]
 
+    # Extract financial ratios from 5 years ago
+    five_years_ago_ratios = data [4]
+
     fmp_ratios = {
         "Company": ticker,
         "Current Ratio": latest_ratios.get("currentRatio"),
@@ -34,6 +37,10 @@ def get_fmp_ratios(ticker):
         "Days Inventory": latest_ratios.get("daysOfInventoryOutstanding"),
         "Asset Turnover": latest_ratios.get("assetTurnover"),
         "Price to Cash Flow (PCF)": latest_ratios.get("priceCashFlowRatio"),
+        "5Y ago PER (P/E Ratio)": five_years_ago_ratios.get("priceEarningsRatio"),
+        "5Y ago PS (Price to Sales)": five_years_ago_ratios.get("priceSalesRatio"),
+        "5Y ago PBV (Price to Book)": five_years_ago_ratios.get("priceToBookRatio"),
+        #"5Y ago priceFairValue": five_years_ago_ratios.get("priceFairValue"),
     }
 
     return fmp_ratios
