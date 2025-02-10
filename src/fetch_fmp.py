@@ -40,6 +40,11 @@ def get_fmp_ratios(ticker):
     # Extract the most recent price
     latest_price = data["price"][0]
 
+    # Price relative to historical valuation values
+    price_to_historical_per = latest_price.get("lastSalePrice") * five_years_ago_ratios.get("priceEarningsRatio")
+    price_to_historical_ps = latest_price.get("lastSalePrice") * five_years_ago_ratios.get("priceSalesRatio")
+    price_to_historical_pbv = latest_price.get("lastSalePrice") * five_years_ago_ratios.get("priceToBookRatio")
+
     fmp_ratios = {
         "Company": ticker,
         "Current Ratio": latest_ratios.get("currentRatio"),
@@ -53,7 +58,9 @@ def get_fmp_ratios(ticker):
         "5Y ago PS (Price to Sales)": five_years_ago_ratios.get("priceSalesRatio"),
         "5Y ago PBV (Price to Book)": five_years_ago_ratios.get("priceToBookRatio"),
         "PRICE" : latest_price.get("lastSalePrice"),
-        #"5Y ago priceFairValue": five_years_ago_ratios.get("priceFairValue"),
+        "Price relative to historical PER (5Y)": price_to_historical_per,
+        "Price relative to historical PS (5Y)": price_to_historical_ps,
+        "Price relative to historical PBV (5Y)": price_to_historical_pbv,
     }
 
     return fmp_ratios
