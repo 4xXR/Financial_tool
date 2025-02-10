@@ -7,5 +7,8 @@ def export_to_csv(data, filename="../data/financial_data.csv"):
     filename = f"../data/financial_data_{timestamp}.csv"
 
     df = pd.DataFrame(data)
-    df.to_csv(filename, index=False)
+    df = df.set_index("Company").T  # Set tickers as columns, financial metrics as rows
+    df.index.name = "RATIOS"
+
+    df.to_csv(filename)
     print(f"Data succesfully saved to {filename}")
