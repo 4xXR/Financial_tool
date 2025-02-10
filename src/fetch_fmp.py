@@ -10,23 +10,35 @@ def get_fmp_ratios(ticker):
     """Fetches missing financial ratios from Financial Modeling Prep (FMP) API."""
     base_url = "https://financialmodelingprep.com/api/v3"
     ratios_url = f"{base_url}/ratios/{ticker}?apikey={API_KEY}"
+    price_url = f"{base_url}/otc/real-time-price/{ticker}?apikey={API_KEY}"
 
-    response = requests.get(ratios_url)
-    if response.status_code != 200:
+    response_ratios = requests.get(ratios_url)
+    response_price = requests.get(price_url)
+
+    if response_ratios.status_code != 200 or response_price.status_code != 200:
         print(f"Failed to retrieve data from {ticker}")
         return None
     
-    data = response.json()
+    ratios_data = response_ratios.json()
+    price_data = response_price.json()
     
+    data = {
+        "ratios": ratios_data,
+        "price": price_data
+    }
+
     if not data:
         print(f"No data available for {ticker}")
         return None
     
     # Extract the most recent financial ratios
-    latest_ratios = data[0]
+    latest_ratios = data["ratios"][0]
 
     # Extract financial ratios from 5 years ago
-    five_years_ago_ratios = data [4]
+    five_years_ago_ratios = data ["ratios"][4]
+
+    # Extract the most recent price
+    latest_price = data["price"][0]
 
     fmp_ratios = {
         "Company": ticker,
@@ -40,7 +52,7 @@ def get_fmp_ratios(ticker):
         "5Y ago PER (P/E Ratio)": five_years_ago_ratios.get("priceEarningsRatio"),
         "5Y ago PS (Price to Sales)": five_years_ago_ratios.get("priceSalesRatio"),
         "5Y ago PBV (Price to Book)": five_years_ago_ratios.get("priceToBookRatio"),
-        "PRICE" : latest_ratios.get("lastSalePrice"),
+        "PRICE" : latest_price.get("lastSalePrice"),
         #"5Y ago priceFairValue": five_years_ago_ratios.get("priceFairValue"),
     }
 
