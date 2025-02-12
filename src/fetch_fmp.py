@@ -8,11 +8,12 @@ API_KEY = os.getenv("FMP_API_KEY")
 if not API_KEY:
     raise ValueError("API KEY not found. Set the 'FMP_API_KEY' environment variable.")
 
+
 def get_fmp_ratios(ticker):
     """Fetches missing financial ratios from Financial Modeling Prep (FMP) API."""
     base_url = "https://financialmodelingprep.com/api/v3"
     ratios_url = f"{base_url}/ratios/{ticker}?apikey={API_KEY}"
-    price_url = f"{base_url}/otc/real-time-price/{ticker}?apikey={API_KEY}"
+    price_url = f"{base_url}/stock/full/real-time-price/{ticker}?apikey={API_KEY}"
 
     response_ratios = requests.get(ratios_url)
     response_price = requests.get(price_url)
@@ -20,14 +21,14 @@ def get_fmp_ratios(ticker):
     if response_ratios.status_code != 200 or response_price.status_code != 200:
         print(f"Failed to retrieve data from {ticker}")
         return None
-    
+
     ratios_data = response_ratios.json()
     price_data = response_price.json()
-    
+
     if not ratios_data or price_data:
         print(f"No data available for {ticker}")
         return None
-    
+
     # Extract the most recent financial ratios
     latest_ratios = ratios_data[0]
 
@@ -43,9 +44,18 @@ def get_fmp_ratios(ticker):
     current_ps = yahoo_data.get("PS (Price to Sales)")
     current_pbv = yahoo_data.get("PBV (Price to Book)")
 
-    price_to_historical_per = (latest_price.get("lastSalePrice") * five_years_ago_ratios.get("priceEarningsRatio")) / current_per
-    price_to_historical_ps = (latest_price.get("lastSalePrice") * five_years_ago_ratios.get("priceSalesRatio")) / current_ps
-    price_to_historical_pbv = (latest_price.get("lastSalePrice") * five_years_ago_ratios.get("priceToBookRatio")) / current_pbv
+    price_to_historical_per = (
+        (latest_price.get("lastSalePrice")
+        * five_years_ago_ratios.get("priceEarningsRatio")
+    ) / current_per if latest_price and five_years_ago_ratios and current_per else None)
+    
+    price_to_historical_ps = (
+        (latest_price.get("lastSalePrice") * five_years_ago_ratios.get("priceSalesRatio")
+    ) / current_ps if latest_price and five_years_ago_ratios and current_ps else None)
+    price_to_historical_pbv = (
+        (latest_price.get("lastSalePrice")
+        * five_years_ago_ratios.get("priceToBookRatio")
+    ) / current_pbv if latest_price and five_years_ago_ratios and current_pbv else None)
 
     fmp_ratios = {
         "Company": ticker,
@@ -59,7 +69,7 @@ def get_fmp_ratios(ticker):
         "5Y ago PER (P/E Ratio)": five_years_ago_ratios.get("priceEarningsRatio"),
         "5Y ago PS (Price to Sales)": five_years_ago_ratios.get("priceSalesRatio"),
         "5Y ago PBV (Price to Book)": five_years_ago_ratios.get("priceToBookRatio"),
-        "PRICE" : latest_price.get("lastSalePrice"),
+        "PRICE": latest_price.get("lastSalePrice"),
         "Price relative to historical PER (5Y)": price_to_historical_per,
         "Price relative to historical PS (5Y)": price_to_historical_ps,
         "Price relative to historical PBV (5Y)": price_to_historical_pbv,
