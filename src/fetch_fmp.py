@@ -25,7 +25,7 @@ def get_fmp_ratios(ticker):
     ratios_data = response_ratios.json()
     price_data = response_price.json()
 
-    if not ratios_data or price_data:
+    if not ratios_data or not price_data:
         print(f"No data available for {ticker}")
         return None
 
