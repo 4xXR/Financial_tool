@@ -1,7 +1,7 @@
 import os
 import requests
 
-from fetch_yahoo import get_financial_ratios_yahoo
+# from fetch_yahoo import get_financial_ratios_yahoo  # Temporarily disabled due to Yahoo Finance rate-limiting
 
 API_KEY = os.getenv("FMP_API_KEY")
 
@@ -33,32 +33,54 @@ def get_fmp_ratios(ticker):
     latest_ratios = ratios_data[0]
 
     # Extract financial ratios from 5 years ago
-    five_years_ago_ratios = ratios_data[4]
+    five_years_ago_ratios = ratios_data[4] if len(ratios_data) > 4 else {}
 
     # Extract the most recent price
-    latest_price = price_data[0]
+    latest_price = price_data[0].get("lastSalePrice")  # adjusted for expected structure
 
-    # Price relative to historical valuation values
-    yahoo_data = get_financial_ratios_yahoo(ticker)
-    current_per = yahoo_data.get("PER (P/E Ratio)")
-    current_ps = yahoo_data.get("PS (Price to Sales)")
-    current_pbv = yahoo_data.get("PBV (Price to Book)")
+    # === USE FMP FOR CURRENT PER, PS, PBV ===
+    current_per = latest_ratios.get("priceEarningsRatio")
+    current_ps = latest_ratios.get("priceSalesRatio")
+    current_pbv = latest_ratios.get("priceToBookRatio")
 
+    # === COMMENTED YAHOO FINANCE CALLS ===
+    # yahoo_data = get_financial_ratios_yahoo(ticker)
+    # current_per = yahoo_data.get("PER (P/E Ratio)")
+    # current_ps = yahoo_data.get("PS (Price to Sales)")
+    # current_pbv = yahoo_data.get("PBV (Price to Book)")
+
+    # === Price to Historical Ratios ===
     price_to_historical_per = (
-        (latest_price.get("lastSalePrice")
-        * five_years_ago_ratios.get("priceEarningsRatio")
-    ) / current_per if latest_price and five_years_ago_ratios and current_per else None)
+        (latest_price * five_years_ago_ratios.get("priceEarningsRatio")) / current_per
+        if latest_price and five_years_ago_ratios.get("priceEarningsRatio") and current_per
+        else None
+    )
     
     price_to_historical_ps = (
-        (latest_price.get("lastSalePrice") * five_years_ago_ratios.get("priceSalesRatio")
-    ) / current_ps if latest_price and five_years_ago_ratios and current_ps else None)
-    price_to_historical_pbv = (
-        (latest_price.get("lastSalePrice")
-        * five_years_ago_ratios.get("priceToBookRatio")
-    ) / current_pbv if latest_price and five_years_ago_ratios and current_pbv else None)
+        (latest_price * five_years_ago_ratios.get("priceSalesRatio")) / current_ps
+        if latest_price and five_years_ago_ratios.get("priceSalesRatio") and current_ps
+        else None
+    )
 
+    price_to_historical_pbv = (
+        (latest_price * five_years_ago_ratios.get("priceToBookRatio")) / current_pbv
+        if latest_price and five_years_ago_ratios.get("priceToBookRatio") and current_pbv
+        else None
+    )
+    
+    # Final financial data output
     fmp_ratios = {
         "Company": ticker,
+        "PRICE": latest_price,
+        "PER (Current FMP)": current_per,
+        "PS (Current FMP)": current_ps,
+        "PBV (Current FMP)": current_pbv,
+        "5Y ago PER (P/E Ratio)": five_years_ago_ratios.get("priceEarningsRatio"),
+        "5Y ago PS (Price to Sales)": five_years_ago_ratios.get("priceSalesRatio"),
+        "5Y ago PBV (Price to Book)": five_years_ago_ratios.get("priceToBookRatio"),
+        "Price relative to historical PER (5Y)": price_to_historical_per,
+        "Price relative to historical PS (5Y)": price_to_historical_ps,
+        "Price relative to historical PBV (5Y)": price_to_historical_pbv,
         "Current Ratio": latest_ratios.get("currentRatio"),
         "Quick Ratio": latest_ratios.get("quickRatio"),
         "Cash Ratio": latest_ratios.get("cashRatio"),
@@ -66,13 +88,6 @@ def get_fmp_ratios(ticker):
         "Days Inventory": latest_ratios.get("daysOfInventoryOutstanding"),
         "Asset Turnover": latest_ratios.get("assetTurnover"),
         "Price to Cash Flow (PCF)": latest_ratios.get("priceCashFlowRatio"),
-        "5Y ago PER (P/E Ratio)": five_years_ago_ratios.get("priceEarningsRatio"),
-        "5Y ago PS (Price to Sales)": five_years_ago_ratios.get("priceSalesRatio"),
-        "5Y ago PBV (Price to Book)": five_years_ago_ratios.get("priceToBookRatio"),
-        "PRICE": latest_price.get("lastSalePrice"),
-        "Price relative to historical PER (5Y)": price_to_historical_per,
-        "Price relative to historical PS (5Y)": price_to_historical_ps,
-        "Price relative to historical PBV (5Y)": price_to_historical_pbv,
     }
 
     return fmp_ratios
