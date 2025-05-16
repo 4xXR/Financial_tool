@@ -14,6 +14,25 @@ logging.basicConfig(
 # Get the Telegram Bot token from the environment variable
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")  # Set this in your environment
 
+# Dictionary of ratio explanations
+RATIO_EXPLANATIONS = {
+    "per": "📈 *PER (Price to Earnings Ratio)*\nMeasures how much investors are willing to pay per dollar of earnings.\nFormula: Price / EPS",
+    "ps": "📊 *PS (Price to Sales Ratio)*\nCompares a company’s stock price to its revenues.\nFormula: Price / Sales per Share",
+    "pbv": "🏦 *PBV (Price to Book Value)*\nCompares stock price with the book value of equity.\nFormula: Price / Book Value per Share",
+    "pcf": "💵 *PCF (Price to Cash Flow)*\nCompares price with the company's operating cash flow.\nFormula: Price / Cash Flow per Share",
+    "roe": "🔁 *ROE (Return on Equity)*\nMeasures how effectively a company uses shareholder equity to generate profit.\nFormula: Net Income / Shareholder Equity",
+    "de": "💼 *Debt-to-Equity Ratio*\nIndicates how much debt a company uses to finance assets vs. equity.\nFormula: Total Debt / Total Equity",
+    "current_ratio": "💧 *Current Ratio*\nMeasures the company's ability to cover short-term obligations.\nFormula: Current Assets / Current Liabilities",
+    "quick_ratio": "⚡ *Quick Ratio*\nA more strict measure of liquidity, excluding inventory.\nFormula: (Current Assets - Inventory) / Current Liabilities",
+    "cash_ratio": "💸 *Cash Ratio*\nIndicates a company's ability to pay off short-term liabilities with cash and cash equivalents.\nFormula: Cash / Current Liabilities",
+    "inventory_turnover": "📦 *Inventory Turnover*\nShows how many times inventory is sold and replaced over a period.\nFormula: Cost of Goods Sold / Average Inventory",
+    "days_inventory": "📅 *Days Inventory*\nAverage number of days the company holds inventory before selling.\nFormula: 365 / Inventory Turnover",
+    "asset_turnover": "🔄 *Asset Turnover*\nMeasures how efficiently a company uses assets to generate revenue.\nFormula: Revenue / Total Assets",
+    "intrinsic_industry": "🧠 *Intrinsic Value based on Industry Average*\nAverage of intrinsic values based on peer multiples (PER, PS, PBV, PCF).",
+    "intrinsic_final": "🎯 *Final Intrinsic Value*\nAverage of industry-based and historical-based intrinsic values. Combines market and historical perspectives.",
+    "intrinsic_historical": "📈 *Estimated Fair Price based on historical PS+PBV (5Y)*\nAverage of fair price calculated using 5Y historical Price/Sales and Price/Book ratios."
+}
+
 # Format financial data into a readable text message
 def format_ratios_text(data):
     lines = []
@@ -120,6 +139,16 @@ async def analize(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # export_to_csv(financial_data, filename="financial_summary.csv")
     # await update.message.reply_document(document=open("../data/financial_summary.csv", "rb"))
 
+# Handler for ratio explanation commands
+async def explain_ratio(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    cmd = update.message.text.lstrip("/").lower()
+    explanation = RATIO_EXPLANATIONS.get(cmd)
+
+    if explanation:
+        await update.message.reply_markdown(explanation)
+    else:
+        await update.message.reply_text("❓ Sorry, I don't have information on that ratio.")
+
 # Entry point of the bot
 if __name__ == "__main__":
     app = ApplicationBuilder().token(TELEGRAM_BOT_TOKEN).build()
@@ -128,5 +157,9 @@ if __name__ == "__main__":
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("analize", analize))
 
+    # Register commands for explanations
+    for ratio_cmd in RATIO_EXPLANATIONS.keys():
+        app.add_handler(CommandHandler(ratio_cmd, explain_ratio))
+        
     print("🤖 Bot is running...")
     app.run_polling()
