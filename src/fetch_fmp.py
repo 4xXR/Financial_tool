@@ -68,6 +68,19 @@ def get_fmp_ratios(ticker):
         else None
     )
     
+    # === Estimated Fair Price Based on 5Y PS and PBV ===
+    historical_fair_price_5y = None
+    if (
+        latest_price
+        and five_years_ago_ratios.get("priceSalesRatio")
+        and current_ps
+        and five_years_ago_ratios.get("priceToBookRatio")
+        and current_pbv
+    ):
+        fair_price_ps = (latest_price * five_years_ago_ratios["priceSalesRatio"]) / current_ps
+        fair_price_pbv = (latest_price * five_years_ago_ratios["priceToBookRatio"]) / current_pbv
+        historical_fair_price_5y = (fair_price_ps + fair_price_pbv) / 2
+
     # Final financial data output
     fmp_ratios = {
         "Company": ticker,
@@ -78,9 +91,10 @@ def get_fmp_ratios(ticker):
         "5Y ago PER (P/E Ratio)": five_years_ago_ratios.get("priceEarningsRatio"),
         "5Y ago PS (Price to Sales)": five_years_ago_ratios.get("priceSalesRatio"),
         "5Y ago PBV (Price to Book)": five_years_ago_ratios.get("priceToBookRatio"),
-        "Price relative to historical PER (5Y)": price_to_historical_per,
-        "Price relative to historical PS (5Y)": price_to_historical_ps,
-        "Price relative to historical PBV (5Y)": price_to_historical_pbv,
+        "Estimated Fair Price based on historical PER (5Y)": price_to_historical_per,
+        "Estimated Fair Price based on historical PS (5Y)": price_to_historical_ps,
+        "Estimated Fair Price based on historical PBV (5Y)": price_to_historical_pbv,
+        "Estimated Fair Price based on historical PS+PBV (5Y)": historical_fair_price_5y,
         "Current Ratio": latest_ratios.get("currentRatio"),
         "Quick Ratio": latest_ratios.get("quickRatio"),
         "Cash Ratio": latest_ratios.get("cashRatio"),
