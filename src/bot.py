@@ -131,6 +131,55 @@ async def analize(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if price and ticker_per and peer_avg_per:
             row["Intrinsic Value based on Peer PER"] = round((price * peer_avg_per) / ticker_per, 3)
 
+        # Additional intrinsic values: PS, PBV, PCF
+    def safe_avg(lst):
+        return sum(lst) / len(lst) if lst else None
+
+    ps_list = [r.get("PS (Current FMP)") for r in financial_data if isinstance(r.get("PS (Current FMP)"), (int, float))]
+    pbv_list = [r.get("PBV (Current FMP)") for r in financial_data if isinstance(r.get("PBV (Current FMP)"), (int, float))]
+    pcf_list = [r.get("Price to Cash Flow (PCF)") for r in financial_data if isinstance(r.get("Price to Cash Flow (PCF)"), (int, float))]
+
+    avg_ps = safe_avg(ps_list)
+    avg_pbv = safe_avg(pbv_list)
+    avg_pcf = safe_avg(pcf_list)
+
+    for row in financial_data:
+        price = row.get("PRICE")
+
+        ps = row.get("PS (Current FMP)")
+        pbv = row.get("PBV (Current FMP)")
+        pcf = row.get("Price to Cash Flow (PCF)")
+
+        val_ps = (price * avg_ps) / ps if price and ps and avg_ps else None
+        val_pbv = (price * avg_pbv) / pbv if price and pbv and avg_pbv else None
+        val_pcf = (price * avg_pcf) / pcf if price and pcf and avg_pcf else None
+
+        if val_ps: row["Intrinsic Value based on Peer PS"] = round(val_ps, 3)
+        if val_pbv: row["Intrinsic Value based on Peer PBV"] = round(val_pbv, 3)
+        if val_pcf: row["Intrinsic Value based on Peer PCF"] = round(val_pcf, 3)
+
+        # Industry average value
+        values = [v for v in [val_ps, val_pbv, val_pcf, row.get("Intrinsic Value based on Peer PER")] if v]
+        industry_avg = safe_avg(values)
+        if industry_avg:
+            row["Intrinsic Value based on Industry Average"] = round(industry_avg, 3)
+
+        # Final intrinsic value with historical PS+PBV
+        historical = row.get("Estimated Fair Price based on historical PS+PBV (5Y)")
+        if industry_avg and historical:
+            row["Final Intrinsic Value (Avg Industry + Historical)"] = round((industry_avg + historical) / 2, 3)
+
+        # Recommendation
+        final_intrinsic = row.get("Final Intrinsic Value (Avg Industry + Historical)")
+        if price and final_intrinsic:
+            diff = (final_intrinsic - price) / price
+            if diff > 0.10:
+                row["RECOMMENDATION"] = "Underpriced"
+            elif diff < -0.10:
+                row["RECOMMENDATION"] = "Overpriced"
+            else:
+                row["RECOMMENDATION"] = "Fairly Priced"
+                
     # Send a formatted text summary of the financials
     text = format_ratios_text(financial_data)
     await update.message.reply_markdown(text)
@@ -160,6 +209,6 @@ if __name__ == "__main__":
     # Register commands for explanations
     for ratio_cmd in RATIO_EXPLANATIONS.keys():
         app.add_handler(CommandHandler(ratio_cmd, explain_ratio))
-        
+
     print("🤖 Bot is running...")
     app.run_polling()
