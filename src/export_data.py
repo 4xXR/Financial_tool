@@ -86,12 +86,17 @@ def export_to_csv(data, filename="../data/financial_data.csv"):
     except Exception as e:
         print(f"Error generating recommendation column: {e}")
 
-    # Calculate the AVERAGE column for numeric rows only
+    # Recalculate DataFrame with AVERAGE column (correct visibility in CSV)
     try:
-        numeric_df = df.select_dtypes(include=['number'])  # solo numéricos
-        df["AVERAGE"] = numeric_df.mean(axis=1)
+        numeric_only_df = df.apply(pd.to_numeric, errors='coerce')  # force conversion
+        averages = numeric_only_df.mean(axis=1)
+
+        # Assign the "AVERAGE" column
+        df["AVERAGE"] = averages
     except Exception as e:
         print(f"Error calculating AVERAGE column: {e}")
+
+    df = df.round(3)
 
     df.to_csv(filename)
     print(f"Data succesfully saved to {filename}")
