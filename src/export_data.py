@@ -61,8 +61,37 @@ def export_to_csv(data, filename="../data/financial_data.csv"):
     except Exception as e:
         print(f"Error calculating Final Intrinsic Value: {e}")
 
-    # Adding 'AVERAGAE' column
-    df['AVERAGE']=df.mean(axis=1, numeric_only=True)
+    # === Generate RECOMMENDATION column ===
+    try:
+        final_intrinsic = df.loc["Final Intrinsic Value (Avg Industry + Historical)"]
+        current_prices = df.loc["PRICE"]
+
+        recommendation = []
+        for ticker in df.columns:
+            intrinsic = final_intrinsic.get(ticker)
+            price = current_prices.get(ticker)
+
+            if not intrinsic or not price:
+                recommendation.append("N/A")
+            else:
+                diff = (intrinsic - price) / price
+                if diff > 0.10:
+                    recommendation.append("Underpriced")
+                elif diff < -0.10:
+                    recommendation.append("Overpriced")
+                else:
+                    recommendation.append("Fairly Priced")
+
+        df.loc["RECOMMENDATION"] = pd.Series(recommendation, index=df.columns).astype(str)
+    except Exception as e:
+        print(f"Error generating recommendation column: {e}")
+
+    # Calculate the AVERAGE column for numeric rows only
+    try:
+        numeric_df = df.select_dtypes(include=['number'])  # solo numéricos
+        df["AVERAGE"] = numeric_df.mean(axis=1)
+    except Exception as e:
+        print(f"Error calculating AVERAGE column: {e}")
 
     df.to_csv(filename)
     print(f"Data succesfully saved to {filename}")
