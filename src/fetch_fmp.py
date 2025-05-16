@@ -104,4 +104,8 @@ def get_fmp_ratios(ticker):
         "Price to Cash Flow (PCF)": latest_ratios.get("priceCashFlowRatio"),
     }
 
+    for key, value in fmp_ratios.items():
+        if isinstance(value, (int, float)):
+            fmp_ratios[key] = round(value, 3)
+
     return fmp_ratios
