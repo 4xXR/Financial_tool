@@ -61,6 +61,8 @@ def export_to_csv(data, filename="../data/financial_data.csv"):
     except Exception as e:
         print(f"Error calculating Final Intrinsic Value: {e}")
 
+    df = df.round(3)
+
     # === Generate RECOMMENDATION column ===
     try:
         final_intrinsic = df.loc["Final Intrinsic Value (Avg Industry + Historical)"]
@@ -93,10 +95,10 @@ def export_to_csv(data, filename="../data/financial_data.csv"):
 
         # Assign the "AVERAGE" column
         df["AVERAGE"] = averages
+        df = df.round(3)
+
     except Exception as e:
         print(f"Error calculating AVERAGE column: {e}")
-
-    df = df.round(3)
 
     df.to_csv(filename)
     print(f"Data succesfully saved to {filename}")
