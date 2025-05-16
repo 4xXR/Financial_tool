@@ -41,6 +41,26 @@ def export_to_csv(data, filename="../data/financial_data.csv"):
     except Exception as e:
         print(f"Error calculating Intrinsic Values: {e}")
 
+    # === Valor intrínseco promedio por industria ===
+    try:
+        industry_avg = (
+            df.loc["Intrinsic Value based on Peer PER"]
+            + df.loc["Intrinsic Value based on Peer PS"]
+            + df.loc["Intrinsic Value based on Peer PBV"]
+            + df.loc["Intrinsic Value based on Peer PCF"]
+            ) / 4
+        df.loc["Intrinsic Value based on Industry Average"] = industry_avg
+    except Exception as e:
+        print(f"Error calculating Industry Average Intrinsic Value: {e}")
+
+    # === Valor intrínseco final: media con valor histórico 5Y ===
+    try:
+        historical_value = df.loc["Estimated Fair Price based on historical PS+PBV (5Y)"]
+        final_intrinsic = (industry_avg + historical_value) / 2
+        df.loc["Final Intrinsic Value (Avg Industry + Historical)"] = final_intrinsic
+    except Exception as e:
+        print(f"Error calculating Final Intrinsic Value: {e}")
+
     # Adding 'AVERAGAE' column
     df['AVERAGE']=df.mean(axis=1, numeric_only=True)
 
