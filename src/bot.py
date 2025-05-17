@@ -122,12 +122,14 @@ def format_ratios_text(data):
 
 # /start command handler
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    logging.info("✅ /start command received")
     await update.message.reply_text("👋 Welcome to the Financial Analysis Bot! Use /analize followed by tickers to get started. Example: /analize GOOGL,AAPL,MSFT")
 
 # /analize command handler
 async def analize(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Validate input
     if not context.args:
+        logging.info("✅ /analize command received")
         await update.message.reply_text("❗Please provide tickers. Example: /analize GOOGL,AAPL")
         return
 
@@ -242,8 +244,5 @@ if __name__ == "__main__":
         app.add_handler(CommandHandler(ratio_cmd, explain_ratio))
 
     print("🤖 Bot is running...")
+    print(f"Registered handlers: {len(app.handlers)}")
     app.run_polling()
-
-    print("Registered handlers:")
-    for h in app.handlers:
-        print(h)
