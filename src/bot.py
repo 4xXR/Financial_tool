@@ -3,7 +3,7 @@ import logging
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 from process_data import get_complete_financials
-from export_data import export_to_csv
+# from export_data import export_to_csv
 
 # Set up logging to show bot activity in the terminal
 logging.basicConfig(
@@ -32,6 +32,32 @@ RATIO_EXPLANATIONS = {
     "intrinsic_final": "🎯 *Final Intrinsic Value*\nAverage of industry-based and historical-based intrinsic values. Combines market and historical perspectives.",
     "intrinsic_historical": "📈 *Estimated Fair Price based on historical PS+PBV (5Y)*\nAverage of fair price calculated using 5Y historical Price/Sales and Price/Book ratios."
 }
+
+# /help command handler
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    help_text = (
+        "📘 Available Commands:\n"
+        "/start - Show welcome message\n"
+        "/help - Show this help menu\n"
+        "/analize TICKER1,TICKER2 - Analyze one or more stock tickers\n\n"
+        "📊 Ratio Explanations:\n"
+        "/per - Price to Earnings\n"
+        "/ps - Price to Sales\n"
+        "/pbv - Price to Book Value\n"
+        "/pcf - Price to Cash Flow\n"
+        "/roe - Return on Equity\n"
+        "/de - Debt to Equity\n"
+        "/current_ratio - Current Ratio\n"
+        "/quick_ratio - Quick Ratio\n"
+        "/cash_ratio - Cash Ratio\n"
+        "/inventory_turnover - Inventory Turnover\n"
+        "/days_inventory - Days Inventory\n"
+        "/asset_turnover - Asset Turnover\n"
+        "/intrinsic_industry - Intrinsic Value (Industry)\n"
+        "/intrinsic_historical - Historical Fair Value\n"
+        "/intrinsic_final - Final Intrinsic Value"
+    )
+    await update.message.reply_text(help_text)
 
 # Format financial data into a readable text message
 def format_ratios_text(data):
@@ -179,10 +205,14 @@ async def analize(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 row["RECOMMENDATION"] = "Overpriced"
             else:
                 row["RECOMMENDATION"] = "Fairly Priced"
-                
+
     # Send a formatted text summary of the financials
     text = format_ratios_text(financial_data)
-    await update.message.reply_markdown(text)
+    #await update.message.reply_markdown(text)
+    print(text)
+    # Telegram's character limit per message is 4096, use 4000 to be safe
+    for chunk in [text[i:i + 4000] for i in range(0, len(text), 4000)]:
+        await update.message.reply_markdown(chunk)
 
     # Export results to CSV and send the file to the user
     # export_to_csv(financial_data, filename="financial_summary.csv")
@@ -205,6 +235,7 @@ if __name__ == "__main__":
     # Register command handlers
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("analize", analize))
+    app.add_handler(CommandHandler("help", help_command))
 
     # Register commands for explanations
     for ratio_cmd in RATIO_EXPLANATIONS.keys():
@@ -212,3 +243,7 @@ if __name__ == "__main__":
 
     print("🤖 Bot is running...")
     app.run_polling()
+
+    print("Registered handlers:")
+    for h in app.handlers:
+        print(h)
