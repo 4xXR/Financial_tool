@@ -71,7 +71,7 @@ export TELEGRAM_BOT_TOKEN=your_bot_token
 4. Or run the Telegram bot:
 
    ```bash
-   python bot.py
+   python src/bot.py
    ```
 
 ## Output
@@ -88,12 +88,30 @@ export TELEGRAM_BOT_TOKEN=your_bot_token
   * Investment recommendation
   * Explanatory commands like `/per`, `/ps`, etc.
 
+## Deploy to Render
+
+To run the bot continuously from the cloud without needing your device on:
+
+- Deploy this repo to [Render.com](https://render.com) as a **Web Service**
+- Set the Start Command to:
+
+  ```bash
+  python src/bot.py
+  ```
+- Set the required environment variables:
+  - `FMP_API_KEY`
+  - `TELEGRAM_BOT_TOKEN`
+- Render will automatically install dependencies from `requirements.txt`
+
+The bot will remain active online and respond to Telegram commands globally.
+
 ## Roadmap
 
 * ✅ Extract and process data from FMP API
 * ✅ Compute intrinsic value estimates based on peer and historical analysis
 * ✅ Export CSV with clean formatting and summary
 * ✅ Telegram Bot integration for mobile and remote interaction
+* ✅ Deploy to Render for 24/7 availability
 * 🚀 Future: Web app with interactive visual explanations and metrics
 
 ## Contributing
