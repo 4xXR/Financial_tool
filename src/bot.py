@@ -243,6 +243,19 @@ if __name__ == "__main__":
     for ratio_cmd in RATIO_EXPLANATIONS.keys():
         app.add_handler(CommandHandler(ratio_cmd, explain_ratio))
 
+        # Dummy HTTP server to keep port open for Render Web Service
+    import threading
+    import http.server
+    import socketserver
+
+    def run_dummy_server():
+        port = int(os.environ.get("PORT", 10000)) # Use PORT for Render
+        handler = http.server.SimpleHTTPRequestHandler
+        with socketserver.TCPServer(("", port), handler) as httpd:
+            logging.info(f"🌐 Dummy web server running on port {port}")
+            httpd.serve_forever()
+
+    threading.Thread(target=run_dummy_server, daemon=True).start()
+
     print("🤖 Bot is running...")
-    print(f"Registered handlers: {len(app.handlers)}")
     app.run_polling()
