@@ -16,21 +16,21 @@ TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")  # Set this in your environ
 
 # Dictionary of ratio explanations
 RATIO_EXPLANATIONS = {
-    "per": "📈 *PER (Price to Earnings Ratio)*\nMeasures how much investors are willing to pay per dollar of earnings.\nFormula: Price / EPS",
-    "ps": "📊 *PS (Price to Sales Ratio)*\nCompares a company’s stock price to its revenues.\nFormula: Price / Sales per Share",
-    "pbv": "🏦 *PBV (Price to Book Value)*\nCompares stock price with the book value of equity.\nFormula: Price / Book Value per Share",
-    "pcf": "💵 *PCF (Price to Cash Flow)*\nCompares price with the company's operating cash flow.\nFormula: Price / Cash Flow per Share",
-    "roe": "🔁 *ROE (Return on Equity)*\nMeasures how effectively a company uses shareholder equity to generate profit.\nFormula: Net Income / Shareholder Equity",
-    "de": "💼 *Debt-to-Equity Ratio*\nIndicates how much debt a company uses to finance assets vs. equity.\nFormula: Total Debt / Total Equity",
-    "current_ratio": "💧 *Current Ratio*\nMeasures the company's ability to cover short-term obligations.\nFormula: Current Assets / Current Liabilities",
-    "quick_ratio": "⚡ *Quick Ratio*\nA more strict measure of liquidity, excluding inventory.\nFormula: (Current Assets - Inventory) / Current Liabilities",
-    "cash_ratio": "💸 *Cash Ratio*\nIndicates a company's ability to pay off short-term liabilities with cash and cash equivalents.\nFormula: Cash / Current Liabilities",
-    "inventory_turnover": "📦 *Inventory Turnover*\nShows how many times inventory is sold and replaced over a period.\nFormula: Cost of Goods Sold / Average Inventory",
-    "days_inventory": "📅 *Days Inventory*\nAverage number of days the company holds inventory before selling.\nFormula: 365 / Inventory Turnover",
-    "asset_turnover": "🔄 *Asset Turnover*\nMeasures how efficiently a company uses assets to generate revenue.\nFormula: Revenue / Total Assets",
-    "intrinsic_industry": "🧠 *Intrinsic Value based on Industry Average*\nAverage of intrinsic values based on peer multiples (PER, PS, PBV, PCF).",
-    "intrinsic_final": "🎯 *Final Intrinsic Value*\nAverage of industry-based and historical-based intrinsic values. Combines market and historical perspectives.",
-    "intrinsic_historical": "📈 *Estimated Fair Price based on historical PS+PBV (5Y)*\nAverage of fair price calculated using 5Y historical Price/Sales and Price/Book ratios."
+    "per": "📈 *PER (Price to Earnings Ratio)*\nMeasures how much investors are willing to pay per dollar of earnings.\nFormula: Price / EPS\n👉 Lower PER (10–20) may indicate undervaluation, higher PER (>30) may suggest overvaluation or growth expectations.",
+    "ps": "📊 *PS (Price to Sales Ratio)*\nCompares a company’s stock price to its revenues.\nFormula: Price / Sales per Share\n👉 PS < 2 is generally considered good for value investors.",
+    "pbv": "🏦 *PBV (Price to Book Value)*\nCompares stock price with the book value of equity.\nFormula: Price / Book Value per Share\n👉 PBV < 1 suggests undervaluation, but PBV between 1–3 is typical.",
+    "pcf": "💵 *PCF (Price to Cash Flow)*\nCompares price with the company's operating cash flow.\nFormula: Price / Cash Flow per Share\n👉 PCF < 10 is often seen as attractive.",
+    "roe": "🔁 *ROE (Return on Equity)*\nMeasures how effectively a company uses shareholder equity to generate profit.\nFormula: Net Income / Shareholder Equity\n👉 ROE > 15% is considered strong.",
+    "de": "💼 *Debt-to-Equity Ratio*\nIndicates how much debt a company uses to finance assets vs. equity.\nFormula: Total Debt / Total Equity\n👉 D/E < 1 is typically considered healthy, but varies by industry.",
+    "current_ratio": "💧 *Current Ratio*\nMeasures the company's ability to cover short-term obligations.\nFormula: Current Assets / Current Liabilities\n👉 Ratio > 1 is good; >2 may indicate inefficiency.",
+    "quick_ratio": "⚡ *Quick Ratio*\nA more strict measure of liquidity, excluding inventory.\nFormula: (Current Assets - Inventory) / Current Liabilities\n👉 Ratio > 1 is healthy.",
+    "cash_ratio": "💸 *Cash Ratio*\nIndicates a company's ability to pay off short-term liabilities with cash and cash equivalents.\nFormula: Cash / Current Liabilities\n👉 Ratio > 0.5 is good, but too high may suggest underutilization.",
+    "inventory_turnover": "📦 *Inventory Turnover*\nShows how many times inventory is sold and replaced over a period.\nFormula: Cost of Goods Sold / Average Inventory\n👉 Higher is better; <2 might indicate overstocking.",
+    "days_inventory": "📅 *Days Inventory*\nAverage number of days the company holds inventory before selling.\nFormula: 365 / Inventory Turnover\n👉 Lower is better; <100 is considered efficient.",
+    "asset_turnover": "🔄 *Asset Turnover*\nMeasures how efficiently a company uses assets to generate revenue.\nFormula: Revenue / Total Assets\n👉 Ratio > 1 is ideal for asset-light businesses.",
+    "intrinsic_industry": "🧠 *Intrinsic Value based on Industry Average*\nAverage of intrinsic values based on peer multiples (PER, PS, PBV, PCF).\n👉 Higher than current price suggests undervaluation.",
+    "intrinsic_final": "🎯 *Final Intrinsic Value*\nAverage of industry-based and historical-based intrinsic values. Combines market and historical perspectives.\n👉 Compares favorably to current price for investment potential.",
+    "intrinsic_historical": "📈 *Estimated Fair Price based on historical PS+PBV (5Y)*\nAverage of fair price calculated using 5Y historical Price/Sales and Price/Book ratios.\n👉 Helps assess relative valuation over time."
 }
 
 # /help command handler
