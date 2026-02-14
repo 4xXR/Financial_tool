@@ -1,61 +1,76 @@
 import os
 import requests
 
-# from fetch_yahoo import get_financial_ratios_yahoo  # Temporarily disabled due to Yahoo Finance rate-limiting
-
 API_KEY = os.getenv("FMP_API_KEY")
-
 if not API_KEY:
     raise ValueError("API KEY not found. Set the 'FMP_API_KEY' environment variable.")
 
 
-def get_fmp_ratios(ticker):
-    """Fetches missing financial ratios from Financial Modeling Prep (FMP) API."""
-    base_url = "https://financialmodelingprep.com/api/v3"
-    ratios_url = f"{base_url}/ratios/{ticker}?apikey={API_KEY}"
-    price_url = f"{base_url}/stock/full/real-time-price/{ticker}?apikey={API_KEY}"
+def get_fmp_ratios(ticker: str):
+    """
+    Fetch financial ratios and price from FMP using STABLE endpoints.
+    Returns a dict with the metrics your bot/app expects, or None if it fails.
+    """
+    ticker = ticker.strip().upper()
 
-    response_ratios = requests.get(ratios_url)
-    response_price = requests.get(price_url)
+    # ✅ STABLE endpoints (replace legacy /api/v3)
+    ratios_url = "https://financialmodelingprep.com/stable/ratios"
+    quote_url = "https://financialmodelingprep.com/stable/quote"
 
-    if response_ratios.status_code != 200 or response_price.status_code != 200:
+    # Some FMP endpoints accept optional params like period/limit.
+    # If your plan ignores them, it still returns data; if not supported, it won't break.
+    ratios_params = {
+        "symbol": ticker,
+        "apikey": API_KEY,
+        "period": "annual",
+        "limit": 5,
+    }
+    quote_params = {"symbol": ticker, "apikey": API_KEY}
+
+    try:
+        response_ratios = requests.get(ratios_url, params=ratios_params, timeout=20)
+        response_quote = requests.get(quote_url, params=quote_params, timeout=20)
+    except requests.RequestException as e:
+        print(f"Request error for {ticker}: {e}")
+        return None
+
+    if response_ratios.status_code != 200 or response_quote.status_code != 200:
         print(f"Failed to retrieve data from {ticker}")
+        print(f"Ratios status: {response_ratios.status_code}, Quote status: {response_quote.status_code}")
         return None
 
     ratios_data = response_ratios.json()
-    price_data = response_price.json()
+    quote_data = response_quote.json()
 
-    if not ratios_data or not price_data:
-        print(f"No data available for {ticker}")
+    if not isinstance(ratios_data, list) or not ratios_data:
+        print(f"No ratios data available for {ticker}")
         return None
 
-    # Extract the most recent financial ratios
+    if not isinstance(quote_data, list) or not quote_data:
+        print(f"No quote data available for {ticker}")
+        return None
+
+    # Most recent ratios (index 0)
     latest_ratios = ratios_data[0]
 
-    # Extract financial ratios from 5 years ago
+    # 5 years ago ratios (index 4 if available)
     five_years_ago_ratios = ratios_data[4] if len(ratios_data) > 4 else {}
 
-    # Extract the most recent price
-    latest_price = price_data[0].get("lastSalePrice")  # adjusted for expected structure
+    # Price from quote endpoint
+    latest_price = quote_data[0].get("price")
 
-    # === USE FMP FOR CURRENT PER, PS, PBV ===
+    # Current valuation ratios
     current_per = latest_ratios.get("priceEarningsRatio")
     current_ps = latest_ratios.get("priceSalesRatio")
     current_pbv = latest_ratios.get("priceToBookRatio")
 
-    # === COMMENTED YAHOO FINANCE CALLS ===
-    # yahoo_data = get_financial_ratios_yahoo(ticker)
-    # current_per = yahoo_data.get("PER (P/E Ratio)")
-    # current_ps = yahoo_data.get("PS (Price to Sales)")
-    # current_pbv = yahoo_data.get("PBV (Price to Book)")
-
-    # === Price to Historical Ratios ===
+    # Historical fair prices based on 5Y ratios
     price_to_historical_per = (
         (latest_price * five_years_ago_ratios.get("priceEarningsRatio")) / current_per
         if latest_price and five_years_ago_ratios.get("priceEarningsRatio") and current_per
         else None
     )
-    
+
     price_to_historical_ps = (
         (latest_price * five_years_ago_ratios.get("priceSalesRatio")) / current_ps
         if latest_price and five_years_ago_ratios.get("priceSalesRatio") and current_ps
@@ -67,8 +82,8 @@ def get_fmp_ratios(ticker):
         if latest_price and five_years_ago_ratios.get("priceToBookRatio") and current_pbv
         else None
     )
-    
-    # === Estimated Fair Price Based on 5Y PS and PBV ===
+
+    # Average of fair price from historical PS + PBV
     historical_fair_price_5y = None
     if (
         latest_price
@@ -81,7 +96,6 @@ def get_fmp_ratios(ticker):
         fair_price_pbv = (latest_price * five_years_ago_ratios["priceToBookRatio"]) / current_pbv
         historical_fair_price_5y = (fair_price_ps + fair_price_pbv) / 2
 
-    # Final financial data output
     fmp_ratios = {
         "Company": ticker,
         "PRICE": latest_price,
@@ -104,7 +118,8 @@ def get_fmp_ratios(ticker):
         "Price to Cash Flow (PCF)": latest_ratios.get("priceCashFlowRatio"),
     }
 
-    for key, value in fmp_ratios.items():
+    # Round numeric values
+    for key, value in list(fmp_ratios.items()):
         if isinstance(value, (int, float)):
             fmp_ratios[key] = round(value, 3)
 
